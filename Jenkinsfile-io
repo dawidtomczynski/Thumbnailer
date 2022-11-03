@@ -1,0 +1,51 @@
+pipeline {
+	agent any
+	tools {
+		maven 'maven-3.6.2'
+		jdk 'jdk-8'
+	}
+	stages {
+		stage('Validate') {
+			steps {
+				sh 'mvn validate'
+			}
+		}
+		stage('Compile') {
+			steps {
+				sh 'mvn compile'
+			}
+		}
+		stage('Test') {
+			steps {
+				sh 'mvn test'
+			}
+		}
+		stage('Package') {
+			steps {
+				sh 'mvn package'
+			}
+		}
+		stage('Verify') {
+			steps {
+				sh 'mvn verify'
+			}
+		}
+		stage('Install') {
+			steps {
+				sh 'mvn versions:set -DnewVersion=3.5 install'
+			}
+		}
+		stage('Deploy') {
+			steps {
+				configFileProvider([configFile(fileId: '88e3cc91-012c-4957-92fa-036e2767f294', variable: 'MAVEN_SETTINGS')]) {
+            		sh 'mvn -s $MAVEN_SETTINGS deploy'
+				}
+			}
+		}
+	}
+    post { 
+        always { 
+            deleteDir()
+        }
+	}
+}

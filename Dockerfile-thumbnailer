@@ -1,0 +1,14 @@
+FROM maven:3.8.6-jdk-8
+COPY ./thumbnailer/app-thumbnailer /thumbnailer/app
+COPY ./thumbnailer/io-thumbnailer /thumbnailer/imageio-extensions
+WORKDIR /thumbnailer/imageio-extensions
+RUN mvn install
+WORKDIR /thumbnailer/app
+RUN mvn verify
+RUN mv ./thumbnail.sh ./target
+ARG TN_SIZE=150
+ENV TN_SIZE $TN_SIZE
+WORKDIR /thumbnailer/app/target
+RUN echo "/thumbnailer/app/target/thumbnail.sh /pics/* -s $TN_SIZE" > entrypoint.sh
+RUN chmod 777 entrypoint.sh
+ENTRYPOINT ./entrypoint.sh
